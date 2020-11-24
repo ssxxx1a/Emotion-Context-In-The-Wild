@@ -161,7 +161,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 # model = CEN()
 # root = '/Users/arthur/Documents/data/MinCaer/test'
 train_data = DataLoader(
-    EmotionDataset(opt.train_img_path, txt_path='data/label_file/train.txt', img_size=opt.img_size,
+    EmotionDataset(opt.train_img_path, txt_path='../data/label_file/train.txt', img_size=opt.img_size,
                    face_size=opt.face_size, IsMark=True),
     batch_size=opt.batch_size,
     pin_memory=True,
@@ -171,7 +171,7 @@ train_data = DataLoader(
     collate_fn=my_collate_fn
 )
 vaild_data = DataLoader(
-    EmotionDataset(opt.vaild_img_path, txt_path='data/label_file/test.txt', img_size=opt.img_size, face_size=opt.face_size),
+    EmotionDataset(opt.vaild_img_path, txt_path='../data/label_file/test.txt', img_size=opt.img_size, face_size=opt.face_size),
     batch_size=opt.batch_size,
     pin_memory=True,
     shuffle=True,

@@ -98,7 +98,7 @@ def ssss(data, model_path):
 model_path = '/Users/arthur/fsdownload/res/9.9_res/No.10/FER_resnet_img_50.pth'
 if __name__ == '__main__':
     vaild_data = DataLoader(
-        EmotionDataset('/opt/data/private/dbmeng/Data/Emotion/Caer/Caer-S/test', txt_path='data/label_file/test.txt', img_size=224,
+        EmotionDataset('/opt/data/private/dbmeng/Data/Emotion/Caer/Caer-S/test', txt_path='../data/label_file/test.txt', img_size=224,
                        face_size=96, IsMark=False),
         batch_size=32,
         pin_memory=True,

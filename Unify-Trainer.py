@@ -30,7 +30,6 @@ from model.Video_Model.baseline import Baseline
 import random
 from pycm import *
 
-
 def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)

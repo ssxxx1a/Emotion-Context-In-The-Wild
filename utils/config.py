@@ -20,14 +20,14 @@ class Dataset_Config(object):
         DATASET_PATH = {
             'caer': '/opt/data/private/dbmeng/Data/Emotion/Caer/Caer',
             'ucf': '/opt/data/private/data/ucf/ori_data/',
-            #'ours': '/opt/data/private/data/Refine_ECW/ECW',
+           # 'ours': '/opt/data/private/data/Refine_ECW/ECW',
             'ours':'/opt/data/private/data/ecw'
         }
         SAVED_PATH = {
             'caer': '/opt/data/private/data/processCaer/',
             'ucf': '/opt/data/private/data/ucf/process_data',
             'ours': '/opt/data/private/data/ecw'
-           # 'ours': '/opt/data/private/data/Refine_ECW/ECW_split',
+            #'ours': '/opt/data/private/data/Refine_ECW/ECW_split',
         }
         return DATASET_PATH[dataset_name], SAVED_PATH[dataset_name]
 
@@ -67,7 +67,7 @@ class Model_Config(object):
             'classes': 7,
             'use_test': True,
             'optim': 'Ranger',
-            'is_context': True,
+            'is_context': False,
             'merge_frame_num': 16,
             'train_threshold': 300,
             'test_threshold': 100,
