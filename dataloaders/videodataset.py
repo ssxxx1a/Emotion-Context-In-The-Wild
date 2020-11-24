@@ -2,15 +2,12 @@ import os
 import sys
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,parentdir)
-from sklearn.model_selection import train_test_split
 import torch
-import random
 import cv2
 import numpy as np
 from torch.utils.data import Dataset
 from tqdm import tqdm
-import torchvision
-from utils.config import Dataset_Config,my_collate_fn
+from config import my_collate_fn
 from collections import Counter
 from torchvision import transforms
 from PIL import Image

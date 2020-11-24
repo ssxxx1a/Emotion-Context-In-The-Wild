@@ -1,8 +1,8 @@
 import csv
 import operator
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import os
-from utils.config import Dataset_Config
+from config import Dataset_Config
 from torchvision import transforms
 from PIL import Image
 import cv2

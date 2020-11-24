@@ -20,23 +20,16 @@ class Dataset_Config(object):
         DATASET_PATH = {
             'caer': '/opt/data/private/dbmeng/Data/Emotion/Caer/Caer',
             'ucf': '/opt/data/private/data/ucf/ori_data/',
-           # 'ours': '/opt/data/private/data/Refine_ECW/ECW',
-            'ours':'/opt/data/private/data/ecw'
+            # 'ours': '/opt/data/private/data/Refine_ECW/ECW',
+            'ours': '/opt/data/private/data/ecw'
         }
         SAVED_PATH = {
             'caer': '/opt/data/private/data/processCaer/',
             'ucf': '/opt/data/private/data/ucf/process_data',
-            'ours': '/opt/data/private/data/ecw'
-            #'ours': '/opt/data/private/data/Refine_ECW/ECW_split',
+            'ours': '/opt/data/private/data/ecw_split'
+            # 'ours': '/opt/data/private/data/Refine_ECW/ECW_split',
         }
         return DATASET_PATH[dataset_name], SAVED_PATH[dataset_name]
-
-    @staticmethod
-    def Get_keyfiles_Path(key):
-        FILES_PATH = {
-            'bbox': "/opt/data/private/data/bbox"
-        }
-        return FILES_PATH[key]
 
     @staticmethod
     def get_fer_path(split):
@@ -88,6 +81,30 @@ class Model_Config(object):
         else:
             # 默认
             return Ranger(train_params, lr=lr, betas=(.95, 0.999), weight_decay=weight_decay)
+
+    @staticmethod
+    def get_pretrain_config(model_name):
+        """
+        Image_level model, just use the pretrain from offical weights
+
+        as following is Video-level pretrained model.
+        c3d : this pretrained is trained in sport-1M by ori C3D
+        r3d : this pretrained is trained in kinetics by r3d-50
+        fan : this pretrained is from debing Meng
+        """
+        MODEL_PRETRAINED_PATH = {
+            # 'c3d': 'pretrained_model/c3d.pickle',
+            'r3d': 'pretrained_model/r3d50_K_200ep.pth',
+            'fan': 'pretrained_model/Resnet18_FER+_pytorch.pth.tar',
+            'caen': 'pretrained_model/backbone_ir50_ms1m_epoch120.pth',
+            'for_test': 'pretrained_model/backbone_ir50_ms1m_epoch120.pth',
+            'baseline': 'pretrained_model/backbone_ir50_ms1m_epoch120.pth',
+            'cnn_lstm': ''
+        }
+        if model_name not in MODEL_PRETRAINED_PATH.keys():
+            return None
+        else:
+            return MODEL_PRETRAINED_PATH[model_name]
 
     @staticmethod
     def get_model_config(model_name):

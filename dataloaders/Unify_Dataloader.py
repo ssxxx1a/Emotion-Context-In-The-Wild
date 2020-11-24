@@ -1,15 +1,11 @@
 import os
 import sys
-import glob
-import csv
-import operator
 
 parentdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, parentdir)
-from torch.utils.data import Dataset, DataLoader
-from utils.config import Dataset_Config, Model_Config
+from torch.utils.data import Dataset
+from config import Dataset_Config, Model_Config
 from sklearn.model_selection import train_test_split
-from dataloaders.randomerase import RandomErasing
 import torch
 from dataloaders.deal_with_ECW import *
 from torchvision import transforms
@@ -84,7 +80,7 @@ class Unify_Dataloader(Dataset):
     def preprocess(self, dataset_name):
         if dataset_name == 'ours':
             source_path, saved_path = Dataset_Config.Get_Path(dataset_name)
-            temp_path = saved_path.replace(saved_path.split('/')[-1], 'Res')
+            temp_path = saved_path.replace(saved_path.split('/')[-1], '_ecw_Res')
             if not os.path.exists(source_path):
                 print("your path of dataset is error")
                 raise NotImplementedError
@@ -93,6 +89,7 @@ class Unify_Dataloader(Dataset):
             if not os.path.exists(saved_path):
                 os.mkdir(saved_path)
             setup_seed(123)
+            print('it will be take some time,but it only run once time')
             generate_dir_res_from_videos(temp_path)
             generate_emotion_label(source_path)
             Generate_Data(source_path, temp_path)
@@ -149,12 +146,12 @@ class Unify_Dataloader(Dataset):
 
     def process_bad_data(self, dataset_name, split, data_split):
         source_path, saved_path = Dataset_Config.Get_Path(dataset_name)
-        print('process bad data  in ', saved_path)
+
         for k in data_split:
             if dataset_name == 'ours':
-                saved_path = os.path.join(saved_path, k)
-
-            folder = os.path.join(saved_path, split)
+                temp_path = os.path.join(saved_path, k)
+            folder = os.path.join(temp_path, split)
+            print('process bad data  in ', folder)
             for category in sorted(os.listdir(folder)):
                 for fname in sorted(os.listdir(os.path.join(folder, category))):
                     fname_path = os.path.join(folder, category, fname)
@@ -346,8 +343,8 @@ if __name__ == '__main__':
     #     shuffle=True,
     #     pin_memory=True,
     # )
-    data = Unify_Dataloader(dataset_name='ours', model_input_type='fan', process=False, split='train', clip_len=16,
-                            IsMark=True)
+    data = Unify_Dataloader(dataset_name='ours', model_input_type='fan', process=True, split='train', clip_len=16,
+                           IsMark=True)
     for i in ['train', 'test']:
         data.process_bad_data('ours', i, ['img', 'iwf', 'face'])
     #

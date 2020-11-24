@@ -8,8 +8,6 @@ import torch
 import torch.nn.functional as F
 from model.Image_Model.resnet2 import ResNet18
 import torchvision
-from model.Additional_model.model_irse import IR_50
-from utils.config import Model_Config
 
 
 def sigmoid(x):

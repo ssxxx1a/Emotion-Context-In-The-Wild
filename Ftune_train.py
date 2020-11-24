@@ -5,14 +5,11 @@ import argparse
 import os
 import torch
 import torch.nn as nn
-from torch.optim import lr_scheduler
 from  model.Image_Model.ftune_model import Ftune_Model
-from torch.optim.lr_scheduler import CosineAnnealingLR
-from torch.utils.data import DataLoader,Dataset
-from utils.config import Dataset_Config
+from torch.utils.data import DataLoader
 from dataloaders.load_ferplus import Fer_loader
 from tqdm import tqdm
-from utils.config import Ranger
+from config import Ranger
 parser = argparse.ArgumentParser(description='capsule')
 parser.add_argument('--nepoch', type=int, default=50, help='num of epoch')
 parser.add_argument('--lr', type=int, default=1e-3, help='lr')
