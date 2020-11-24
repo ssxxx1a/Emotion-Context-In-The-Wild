@@ -1,0 +1,38 @@
+### Dataset
+
+[baidu cloud](https://pan.baidu.com/s/1iDClwqtODylPI0Rj6yfAEQ)  pwd:tt23
+
+because the data has some noise ,such as landmark in diff person、bad data , and also should change to standard format ,so dowload the data in your path ,and set the path in utils/config . the  Class Dataset_Config 's method :Get_path, change the name 'ours' to your path which you put the ECW data.
+
+and then run :
+
+```
+python dataloader/Unify_Dataloader.py
+```
+
+as a result is , you will get a split data in your saved path where you set in config.py
+
+
+
+### Train
+
+set the options which you want  in get_common_config of config.py ,and set the model which you want to train in Unify-Trainer.py
+
+```
+python Unify-Trainer.py
+```
+
+it will be work.
+
+
+
+as the result, you can see the res of train. 
+
+1. the confusion matrix in Result/Confusion_matrix dir
+2. the train log and tensorboard in  ./log
+
+
+
+the more standard arch will be release some days later.
+
+
