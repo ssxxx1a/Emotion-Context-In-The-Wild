@@ -73,11 +73,5 @@ confusion matrix (refined data):
 
 <img src="./data/saved_res/cm.png" style="zoom:50%;" />
 
-train acc:
-
-<img src="./data/saved_res/train_acc.png" style="zoom:30%;" />
-
-<img src="./data/saved_res/test_acc.png" style="zoom:30%;" />
-
-<img src="./data/saved_res/train_loss.png" style="zoom:50%;" />
+<img src="./data/saved_res/train.png" style="zoom:50%;" />
 
