@@ -18,7 +18,7 @@ other: other background info except for the above two cases.
 
 
 
-because the data has some noise ,such as landmark in diff person、bad data , and also should change to standard format ,so dowload the data in your path ,and set the path in **config.py ** .
+because the data has some noise ,such as landmark in diff person、bad data , and also should change to standard format ,so dowload the data in your path ,and set the path in   **config.py **  
 
 the  Class Dataset_Config 's method :Get_path, change the name 'ours' to your path which you put the ECW data.
 
