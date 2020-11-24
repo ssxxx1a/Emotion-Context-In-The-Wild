@@ -83,8 +83,8 @@ if not os.path.exists(save_dir):
 """
 remove the old log
 """
-os.system('rm -rf ./log/*')
-os.system('rm -rf ./Result/Confusion_matrix/*')
+# os.system('rm -rf ./log/*')
+# os.system('rm -rf ./Result/Confusion_matrix/*')
 
 
 def Get_model(model_name, pretrain_model_path, pretrain=True):

@@ -44,6 +44,12 @@ as a result is , you will get a split data in your saved path where you set in c
 
 set the options which you want  in get_common_config of config.py ,and set the model which you want to train in Unify-Trainer.py
 
+as example,
+
+you can set the hyper-param of model in config.py , and then set the correspond model name in  Unify-Trainer.py line 52. 
+
+and then.
+
 ```
 python Unify-Trainer.py
 ```
@@ -71,7 +77,7 @@ acc of refined dataset:
 
 confusion matrix (refined data):
 
-<img src="./data/saved_res/cm.png" style="zoom:50%;" />
+<img src="./data/saved_res/cm.png" style="zoom:30%;" />
 
 <img src="./data/saved_res/train.png" style="zoom:50%;" />
 
