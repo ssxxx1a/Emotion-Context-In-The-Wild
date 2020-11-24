@@ -2,7 +2,7 @@
 
 [baidu cloud](https://pan.baidu.com/s/1iDClwqtODylPI0Rj6yfAEQ)  pwd:tt23
 
-#### !!!!  for better performance of context data. we simple some typical data of ECW, these data have more rich context (such as ,body pose ,interaction of other persons)
+## !!!!  for better performance of context data. we simple some typical data of ECW, these data have more rich context (such as ,body pose ,interaction of other persons)
 
 [baidu cloud](https://pan.baidu.com/s/13AZca4cAnyH70e5GkkG83w)  pwd:l7wu
 
@@ -18,7 +18,7 @@ other: other background info except for the above two cases.
 
 
 
-because the data has some noise ,such as landmark in diff person、bad data , and also should change to standard format ,so dowload the data in your path ,and set the path in   **config.py **  
+because the data has some noise ,such as landmark in diff person、bad data , and also should change to standard format ,so dowload the data in your path ,and set the path in    config.py 
 
 the  Class Dataset_Config 's method :Get_path, change the name 'ours' to your path which you put the ECW data.
 
