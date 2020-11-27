@@ -83,8 +83,10 @@ if not os.path.exists(save_dir):
 """
 remove the old log
 """
-# os.system('rm -rf ./log/*')
-# os.system('rm -rf ./Result/Confusion_matrix/*')
+
+
+os.system('rm -rf ./log/*')
+os.system('rm -rf ./Result/Confusion_matrix/*')
 
 
 def Get_model(model_name, pretrain_model_path, pretrain=True):
@@ -324,8 +326,8 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
 
                 running_loss += loss.item() * face.size(0)
                 running_corrects += torch.sum(preds == labels.data)
+                print('\ntemp/label:{}/{}'.format(preds[0], labels[0]))
 
-            #  print('\ntemp/label:{}/{}'.format(preds[0], labels[0]))
             epoch_loss = running_loss / trainval_sizes[phase]
             epoch_acc = running_corrects.double() / trainval_sizes[phase]
 

@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from config import Dataset_Config, Model_Config
 from sklearn.model_selection import train_test_split
 import torch
-from dataloaders.deal_with_ECW import *
+from dataloaders.deal_with_ECW_v2 import *
 from torchvision import transforms
 from PIL import Image
 
@@ -90,10 +90,18 @@ class Unify_Dataloader(Dataset):
                 os.mkdir(saved_path)
             setup_seed(123)
             print('it will be take some time,but it only run once time')
-            generate_dir_res_from_videos(temp_path)
-            generate_emotion_label(source_path)
-            Generate_Data(source_path, temp_path)
-            split_train_test(saved_path, temp_path, radio=0.7)
+
+            split = ['train', 'test']
+            for i in split:
+                Generate_Data(os.path.join(source_path, i), os.path.join(temp_path, i))
+            generate_split_data(saved_path)
+            for i in split:
+                split_data(temp_path, saved_path, i)
+            # for version 1
+            # generate_dir_res_from_videos(temp_path)
+            # generate_emotion_label(source_path)
+            # Generate_Data(source_path, temp_path)
+            # split_train_test(saved_path, temp_path, radio=0.7)
             os.system('rm -rf ' + temp_path)
 
     # for pre-process function.............

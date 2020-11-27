@@ -18,7 +18,7 @@ other: other background info except for the above two cases.
 
 
 
-Since the original data has certain noise (landmarks are marked on different individuals, the duration is too short a clip), and the data needs to be converted into a standard format, so here is a preprocessing sh
+Since the original data has certain noise (landmarks are marked on different individuals, the duration  of one clip is too short), and the data needs to be converted into a standard format, so here is a preprocessing sh
 
 
 
@@ -76,4 +76,10 @@ confusion matrix (refined data):
 <img src="./data/saved_res/cm.png" style="zoom:30%;" />
 
 <img src="./data/saved_res/train.png" style="zoom:50%;" />
+
+
+
+
+
+
 

@@ -128,6 +128,8 @@ def crop_face_by_landmark_only(img, landmark_x, landmark_y, w, h, face_size):
 
 
 def generate_split_data(save_path):
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
     content = os.listdir(save_path)
     if len(content) > 0 and content[0] != '.DS_Store':
         print('you had better make the res dir is empty')
@@ -153,7 +155,7 @@ def generate_dir_res_from_videos(save_path):
         print('you had better make the res dir is empty')
         print('your dir is not empty:', content)
         raise NotImplementedError
-    emotion_dir = ['Disgust', 'Happy', 'Surprised', 'Sad', 'Angry', 'Neutral', 'Fear']  # 使用contemp
+    emotion_dir = ['Disgust', 'Happy', 'Surprised', 'Sad', 'Angry', 'Neutral', 'Fear']
     for k in emotion_dir:
         if not os.path.exists(os.path.join(save_path, k)):
             os.mkdir(os.path.join(save_path, k))
@@ -177,6 +179,9 @@ def generate_emotion_label(toppath):
 
 
 def Generate_Data(toppath, save_path):
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    generate_dir_res_from_videos(save_path)
     dataset_name = ["img", "face", "iwf"]
     for dir in tqdm(sorted(os.listdir(toppath))):
         if dir != '.DS_Store':
@@ -244,8 +249,44 @@ def Generate_Data(toppath, save_path):
                                         img_without_face)
 
 
-def split_train_test(save_path, toppath, radio=0.7, model='cp'):
-    generate_split_data(save_path)
+# def split_train_test(save_path, toppath, radio=0.7, model='cp'):
+#     generate_split_data(save_path)
+#     dataset_name = ["img", "face", "iwf"]
+#     emotion_path_list = {
+#         'Disgust': [],
+#         'Happy': [],
+#         'Surprised': [],
+#         'Sad': [],
+#         'Angry': [],
+#         'Neutral': [],
+#         'Fear': [],
+#     }
+#     for emotion in emotion_path_list.keys():
+#         dir_path = os.path.join(toppath, emotion)
+#         for dir in sorted(os.listdir(os.path.join(toppath, emotion))):
+#             emotion_path_list[emotion].append(os.path.join(dir_path, dir))
+#
+#     for k, v in emotion_path_list.items():
+#
+#         l = int(len(v) * radio)
+#         random.shuffle(v)
+#         for name in dataset_name:
+#             train_count = 0
+#             for train_item in v[:l]:
+#                 train_cmd = 'mv  ' + os.path.join(train_item, name) + ' ' + os.path.join(save_path, name, 'train',
+#                                                                                          k) + '/S' + str(
+#                     train_count).zfill(4)
+#                 os.system(train_cmd)
+#                 train_count += 1
+#             test_count = 0
+#             for test_item in v[l:]:
+#                 test_cmd = 'mv  ' + os.path.join(test_item, name) + ' ' + os.path.join(save_path, name, 'test',
+#                                                                                        k) + '/S' + str(
+#                     test_count).zfill(4)
+#                 test_count += 1
+#                 os.system(test_cmd)
+#
+def split_data(souce_path, save_path, model='train'):
     dataset_name = ["img", "face", "iwf"]
     emotion_path_list = {
         'Disgust': [],
@@ -257,37 +298,133 @@ def split_train_test(save_path, toppath, radio=0.7, model='cp'):
         'Fear': [],
     }
     for emotion in emotion_path_list.keys():
-        dir_path = os.path.join(toppath, emotion)
-        for dir in sorted(os.listdir(os.path.join(toppath, emotion))):
+        dir_path = os.path.join(souce_path, model, emotion)
+        for dir in sorted(os.listdir(dir_path)):
             emotion_path_list[emotion].append(os.path.join(dir_path, dir))
 
     for k, v in emotion_path_list.items():
-
-        l = int(len(v) * radio)
         random.shuffle(v)
         for name in dataset_name:
-            train_count = 0
-            for train_item in v[:l]:
-                train_cmd = 'mv  ' + os.path.join(train_item, name) + ' ' + os.path.join(save_path, name, 'train',
+            count = 0
+            for item in v:
+                cmd = 'mv  ' + os.path.join(item, name) + ' ' + os.path.join(save_path, name, model,
                                                                                          k) + '/S' + str(
-                    train_count).zfill(4)
-                os.system(train_cmd)
-                train_count += 1
-            test_count = 0
-            for test_item in v[l:]:
-                test_cmd = 'mv  ' + os.path.join(test_item, name) + ' ' + os.path.join(save_path, name, 'test',
-                                                                                       k) + '/S' + str(
-                    test_count).zfill(4)
-                test_count += 1
-                os.system(test_cmd)
+                    count).zfill(4)
+                os.system(cmd)
+                count += 1
+
+
+def split_train_test_in_ori_data(source_path, target_path, splits):
+    if not os.path.exists(target_path):
+        os.mkdir(target_path)
+    emotion_path_list = {
+        'Disgust': [],
+        'Happy': [],
+        'Surprised': [],
+        'Sad': [],
+        'Angry': [],
+        'Neutral': [],
+        'Fear': [],
+        'Contempt': []
+    }
+    for split in splits:
+        if not os.path.exists(os.path.join(target_path, split)):
+            os.mkdir(os.path.join(target_path, split))
+    DATA = os.listdir(source_path)
+    random.shuffle(DATA)
+    for dir in DATA:
+        if dir != '.DS_Store':
+            dir_path = os.path.join(source_path, dir)
+            F = open(os.path.join(source_path, dir, dir + '_label.txt'))
+            emotion_path_list[F.readline().split(' ')[0]].append(dir_path)
+    train_count = 0
+    test_count = 0
+    for k, v in tqdm(emotion_path_list.items()):
+        if len(v) < 100:
+            radio = 0.6
+        else:
+            radio = 0.7
+        l = int(len(v) * radio)
+        random.shuffle(v)
+
+        for train_item in v[:l]:
+            sour_train = train_item.split('/')[-1]
+            target_train = 'S' + str(train_count).zfill(4)
+            train_cmd = 'cp -r ' + train_item + ' ' + os.path.join(target_path, 'Train', target_train)
+            os.system(train_cmd)
+            for tl in os.listdir(os.path.join(target_path, 'Train', target_train)):
+                os.system('mv ' + os.path.join(target_path, 'Train', target_train, tl) + ' ' + os.path.join(target_path,
+                                                                                                            'Train',
+                                                                                                            target_train,
+                                                                                                            tl.replace(
+                                                                                                                sour_train,
+                                                                                                                target_train)))
+            train_count += 1
+
+        for test_item in v[l:]:
+            sour_test = test_item.split('/')[-1]
+            target_test = 'S' + str(test_count).zfill(4)
+            test_cmd = 'cp -r ' + test_item + ' ' + os.path.join(target_path, 'Test', target_test)
+            os.system(test_cmd)
+            for tl in os.listdir(os.path.join(target_path, 'Test', target_test)):
+                os.system('mv ' + os.path.join(target_path, 'Test', target_test, tl) + ' ' + os.path.join(target_path,
+                                                                                                          'Test',
+                                                                                                          target_test,
+                                                                                                          tl.replace(
+                                                                                                              sour_test,
+                                                                                                              target_test)))
+            test_count += 1
+
+
+def get_distribution(path_n):
+    count = {'body': 0, 'interaction': 0, 'other': 0}
+    emotion = {'body': {}, 'interaction': {}, 'other': {}}
+    xxxx = {}
+    for root, dirs, files in os.walk(path_n):
+        for dir in dirs:
+            file = os.path.join(root, dir, dir + '_annotator1.txt')
+            F = open(file)
+            for k in F.readlines():
+                count[k.rstrip('\n').split(' ')[-1]] += 1
+                if k.split(' ')[0] in xxxx.keys():
+                    xxxx[k.split(' ')[0]] += 1
+
+                else:
+                    xxxx[k.split(' ')[0]] = 1
+
+                if k.split(' ')[0] in emotion[k.rstrip('\n').split(' ')[-1]].keys():
+                    emotion[k.rstrip('\n').split(' ')[-1]][k.split(' ')[0]] += 1
+                else:
+                    emotion[k.rstrip('\n').split(' ')[-1]][k.split(' ')[0]] = 1
+    print(count)
+    print(emotion)
+    print(xxxx)
 
 
 if __name__ == '__main__':
-    save_path = "./ECW_res"
-    toppath = "./ECW"
-    split_path = "./ECW_split"
-    generate_dir_res_from_videos(save_path)
-    generate_dir_res_from_videos(split_path)
-    generate_emotion_label(toppath)
-    Generate_Data(toppath, save_path=save_path)
-    split_train_test(split_path, save_path, radio=0.7)
+
+    # ori_path = '/Users/arthur/fsdownload/New_videos/'
+    souce_path = '/Users/arthur/fsdownload/R-ecw'
+    temp_path = '/Users/arthur/fsdownload/temp'
+    target_path = '/Users/arthur/fsdownload/R-ecw-split'
+    split = ['train', 'test']
+    # 获得对train 和test划分的数据
+    # split_train_test_in_ori_data(ori_path, souce_path, ['train', 'test'])
+    # for i in split:
+    #     Generate_Data(os.path.join(souce_path, i), os.path.join(temp_path, i))
+    generate_split_data(target_path)
+    for i in split:
+        split_data(temp_path, target_path, i)
+# os.system('rm -rf '+temp_path)
+# for root, dirs, files in os.walk(path):
+#     for dir in dirs:
+#         file = os.path.join(root, dir, dir + '_label.txt')
+#         F = open(file)
+#         for k in F.readlines():
+#             if k.split(' ')[0]=='Happy':
+#                 cmd1='cp '+os.path.join(root, dir, dir+'_landmark.txt')+' '+os.path.join(s,dir+'.txt')
+#                 cmd2 = 'cp ' + os.path.join(root, dir, dir + '.mp4') + ' ' + os.path.join(s, dir + '.mp4')
+#                 os.system(cmd1)
+#                 os.system(cmd2)
+
+# # fear disgust sad angry surprise netural happy

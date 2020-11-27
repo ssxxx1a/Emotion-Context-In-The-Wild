@@ -95,6 +95,7 @@ class Bottleneck(nn.Module):
 
         return out
 
+
 ###''' self-attention; relation-attention '''
 
 class ResNet_AT(nn.Module):
@@ -133,7 +134,6 @@ class ResNet_AT(nn.Module):
                           kernel_size=1, stride=stride, bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
-
         layers = []
         layers.append(block(self.inplanes, planes, stride, downsample))
         self.inplanes = planes * block.expansion
@@ -174,9 +174,10 @@ class ResNet_AT(nn.Module):
 #     return model
 
 class Baseline(nn.Module):
-    def __init__(self, pretrain=True, context=False):
+    def __init__(self, pretrain=True, context=False,num_classes=7):
         super(Baseline, self).__init__()
-        self.context=context
+        self.context = context
+        self.num_classes=num_classes
         if pretrain:
             self.backbone = ResNet18()
             print('load pretrained baseline')
@@ -203,13 +204,13 @@ class Baseline(nn.Module):
         # self.backbone =nn.Sequential(
         #     IR_50([112,112]),
         # )
-        self.fc = nn.Linear(512, 7)
+        self.fc = nn.Linear(512, num_classes)
         if self.context:
-            self.context_fc=nn.Linear(512,7)
+            self.context_fc = nn.Linear(512, num_classes)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    def forward(self,face,context=True):
-        score_fusion = torch.zeros(size=(face.size(0), 7)).to(self.device)
+    def forward(self, face, context=True):
+        score_fusion = torch.zeros(size=(face.size(0), self.num_classes)).to(self.device)
 
         for t in range(face.size(2)):
             f = face[:, :, t, :, :]
@@ -220,16 +221,17 @@ class Baseline(nn.Module):
             res = self.fc(res)
             score_fusion += res
         if self.context:
-            context_score_fusion = torch.zeros(size=(face.size(0), 7)).to(self.device)
+            context_score_fusion = torch.zeros(size=(face.size(0), self.num_classes)).to(self.device)
             for t in range(context.size(2)):
                 f = context[:, :, t, :, :]
                 res = self.context_bkb(f)
-                res=res.view(context.size(0),-1)
-                context_score_fusion+=self.context_fc(res)
+                res = res.view(context.size(0), -1)
+                context_score_fusion += self.context_fc(res)
         if self.context:
-            return score_fusion.div(face.size(2))+context_score_fusion.div(context.size(2))
+            return score_fusion.div(face.size(2)) + context_score_fusion.div(context.size(2))
         else:
             return score_fusion.div(face.size(2))
+
 
 if __name__ == '__main__':
     model = Baseline(context=True).cuda()
@@ -241,4 +243,4 @@ if __name__ == '__main__':
     # print(list(model.backbone.state_dict().items())[0])
     x = torch.rand(size=(16, 3, 3, 112, 112)).cuda()
     context = torch.rand(size=(16, 3, 3, 224, 224)).cuda()
-    print(model(x,context).size())
+    print(model(x, context).size())
