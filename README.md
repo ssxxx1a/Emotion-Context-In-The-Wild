@@ -1,10 +1,12 @@
 ### Dataset
 
-[baidu cloud](https://pan.baidu.com/s/1iDClwqtODylPI0Rj6yfAEQ)  pwd:tt23
+~~[baidu cloud](https://pan.baidu.com/s/1iDClwqtODylPI0Rj6yfAEQ)  pwd:tt23~~
 
 ## !!!! In order to obtain more typical data, we sampled part of the data in ECW as new data, which contains richer context information (such as gestures, interaction information)
 
-[baidu cloud](https://pan.baidu.com/s/13AZca4cAnyH70e5GkkG83w)  pwd:l7wu
+~~[baidu cloud](https://pan.baidu.com/s/13AZca4cAnyH70e5GkkG83w)  pwd:l7wu~~
+
+Data preprocessing has changed, If you use the above data, modify it to v1 version in Unify-dataloader.py.
 
 <img src="./data/saved_res/refined_data.png" style="zoom:50%;" />
 
