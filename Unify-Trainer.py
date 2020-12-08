@@ -5,8 +5,10 @@ import os
 import timeit
 import numpy as np
 import torch
+import time
 import torch.nn as nn
 from tqdm import tqdm
+from utils.util import unnorm_save
 from tensorboardX import SummaryWriter
 from model.Video_Model.reset3d import generate_model
 from model.Video_Model.caen import CAEN
@@ -20,6 +22,8 @@ from model.Video_Model.cnn_lstm import CNN_LSTM
 from model.Video_Model.i3d_model import i3_res18_nl
 from model.Video_Model.baseline import Baseline
 import random
+import argparse
+from torchvision import transforms
 from pycm import *
 
 
@@ -34,12 +38,11 @@ def setup_seed(seed):
 
 setup_seed(123)
 
-
-def _worker_init_fn(worker_id: int) -> None:
-    # Modulo 2**32 because np.random.seed() only accepts values up to 2**32 - 1
-    initial_seed = torch.initial_seed() % 2 ** 32
-    worker_seed = initial_seed + worker_id
-    np.random.seed(worker_seed)
+# def _worker_init_fn(worker_id: int) -> None:
+#     # Modulo 2**32 because np.random.seed() only accepts values up to 2**32 - 1
+#     initial_seed = torch.initial_seed() % 2 ** 32
+#     worker_seed = initial_seed + worker_id
+#     np.random.seed(worker_seed)
 
 
 # Use GPU if available else revert to CPU
@@ -64,7 +67,7 @@ optim_name = common_config['optim']  # used optim name
 bs = common_config['batch_size']  # batch size
 Is_Context = common_config['is_context']  # is use Context
 merge_frame_num = int(common_config['merge_frame_num'])  # how many frame to fusion
-'''
+''' 
  model param choose.
 '''
 model_config = config.get_model_config(setting['model'])
@@ -84,13 +87,22 @@ if not os.path.exists(save_dir):
 remove the old log
 """
 
-
 os.system('rm -rf ./log/*')
 os.system('rm -rf ./Result/Confusion_matrix/*')
+#os.system('rm -rf ./img/*')
 
-
+parser = argparse.ArgumentParser(description='PyTorch CelebA Training')
+parser.add_argument('--mode', default='face', type=str, help='use info')
+parser.add_argument('--context', default=False, type=bool, help='use context')
+opts = parser.parse_args()
+mode = opts.mode
+Is_Context = opts.context
+if not Is_Context:
+    radio = 1.414
+else:
+    radio = 1
 def Get_model(model_name, pretrain_model_path, pretrain=True):
-    """
+    """o
     :param model_name: the model name
     :param pretrain_model_path:  the path of pretained model
     :param pretrain: Is use Pretrain
@@ -99,12 +111,12 @@ def Get_model(model_name, pretrain_model_path, pretrain=True):
         this funtion is contain some code about diff lr for diff layer. if need,should be reference.
     """
     Model = {
-        'fan': resnet18_AT(num_pair=merge_frame_num),
+        'fan': resnet18_AT(num_pair=merge_frame_num, context=True),
         'r3d': generate_model(50),
-        'caen': CAEN(merge_frame_num=merge_frame_num),
+        'caen': CAEN(merge_frame_num=merge_frame_num, is_context=Is_Context),
         'for_test': i3_res18_nl(7),
         # 'for_test': For_test.ResNet_AT(),
-        'baseline': Baseline(pretrain=pretrain, context=Is_Context),
+        'baseline': Baseline(pretrain=pretrain, context=Is_Context, radio=radio),
         'cnn_lstm': CNN_LSTM()
     }
     model = Model[model_name]
@@ -121,13 +133,13 @@ def Get_model(model_name, pretrain_model_path, pretrain=True):
             # elif modelName == 'R2Plus1D':
             #     model = R2Plus1D_model.R2Plus1DClassifier(num_classes=num_classes, layer_sizes=(2, 2, 2, 2))
             #     train_params = [{'params': R2Plus1D_model.get_1x_lr_params(model), 'lr': lr},
-            #                     {'params': R2Plus1D_model.get_10x_lr_params(model), 'lr': lr * 10}]
+            #                     {'params':    R2Plus1D_model.get_10x_lr_params(model), 'lr': lr * 10}]
             # elif modelName == 'R3D':
             #     model = R3D_model.R3DClassifier(num_classes=num_classes, layer_sizes=(2, 2, 2, 2))
             #     train_params = model.parameters()
         elif modelName == 'r3d':
             model = model
-        elif modelName == 'caen':
+        elif modelName == '_caen':
             checkpoint = torch.load(pretrain_model_path)
             model_stact_dict = model.backbone_face.state_dict()
             model_stact_dict.update(checkpoint)
@@ -136,8 +148,9 @@ def Get_model(model_name, pretrain_model_path, pretrain=True):
             model_stact_dict = model.backbone.state_dict()
             model_stact_dict.update(checkpoint)
         elif modelName == 'baseline':
+
             # checkpoint = torch.load('./fer/fer+_best.pth.tar')
-            checkpoint = torch.load('./pretrained_model/ResNet_pretrained.pth.tar')
+            checkpoint = torch.load('./pretrained_model/fer+_best.pth.tar')
             load_state_dict = {k.replace('module.backbone.', ''): v for k, v in checkpoint['state_dict'].items() if
                                k.replace('module.backbone.', '') in model.backbone.state_dict()}
             model.backbone.load_state_dict(load_state_dict)
@@ -145,9 +158,8 @@ def Get_model(model_name, pretrain_model_path, pretrain=True):
 
     return model
 
-
 def diff_lr(modelName, model):
-    if modelName == 'caen':
+    if modelName == '_caen':
         ig_params_face = list(map(id, model.backbone_face.parameters()))
         ig_params_img = list(map(id, model.backbone_img.parameters()))
         transforms_params = filter(
@@ -182,6 +194,7 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
         print(name + ' : ' + str(set))
     print('optim : ' + optim_name)
     print('---------------------settings end----------------------------')
+
     model = Get_model(modelName, pretrain_model_path=pretrain_model_path, pretrain=Ispretrain)
     '''
     if use differ lr in differ layer ,
@@ -199,7 +212,7 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
     #   scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.9)
     #   optimizer = optim.SGD(params_list, lr=lr, momentum=0.9, weight_decay=5e-4)
     #   scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5,
-    #                                         gamma=0.1)  # the scheduler divides the lr by 10 every 10 epochs
+    #                                         gamma=0s.1)  # the scheduler divides the lr by 10 every 10 epochs
     print("Training in {} Dataset".format(dataset))
     print('Total params: %.2fM' % (sum(p.numel() for p in model.parameters()) / 1000000.0))
 
@@ -228,24 +241,24 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
 
     train_dataloader = DataLoader(
         Unify_Dataloader(dataset_name=dataset, model_input_type=modelName, split='train', clip_len=merge_frame_num,
-                         IsMark=True, Is_Context=Is_Context),
+                         IsMark=True, Is_Context=Is_Context, mode=mode),
         batch_size=bs,
         shuffle=True,
         num_workers=8,
         pin_memory=True,
         drop_last=True,
-        worker_init_fn=_worker_init_fn,
+        #  worker_init_fn=_worker_init_fn,
         collate_fn=my_collate_fn,
     )
     test_dataloader = DataLoader(
         Unify_Dataloader(dataset_name=dataset, split='test', model_input_type=modelName, clip_len=merge_frame_num,
-                         IsMark=True, Is_Context=Is_Context),
+                         IsMark=True, Is_Context=Is_Context, mode=mode),
         batch_size=bs,
         num_workers=8,
-        shuffle=True,
+        shuffle=False,
         pin_memory=True,
         drop_last=True,
-        worker_init_fn=_worker_init_fn,
+        #   worker_init_fn=_worker_init_fn,
         collate_fn=my_collate_fn
     )
     # trainval_loaders = {'train': train_dataloader, 'val': val_dataloader}
@@ -285,17 +298,21 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
                 labels = labels.to(device)
                 if Is_Context:
                     context = context.to(device)
+                # transforms.ToPILImage()(face[:, :, 0, :, :][0].cpu()).save('./face.png')
+                # transforms.ToPILImage()(context[:, :, 0, :, :][0].cpu()).save('./context.png')
                 # img = img.cuda(non_blocking=True)
                 # labels = labels.cuda(non_blocking=True)
                 if phase == 'train':
                     if Is_Context:
+                        # outputs, _, _ = model(face, context)
                         outputs = model(face, context)
+
                     else:
                         outputs = model(face)
                 else:
                     with torch.no_grad():
                         if Is_Context:
-                            outputs = model(face, context)
+                            outputs, _, _ = model(face, context)
                         else:
                             outputs = model(face)
 
@@ -326,7 +343,7 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
 
                 running_loss += loss.item() * face.size(0)
                 running_corrects += torch.sum(preds == labels.data)
-                print('\ntemp/label:{}/{}'.format(preds[0], labels[0]))
+            # print('\ntemp/label:{}/{}'.format(preds[0], labels[0]))
 
             epoch_loss = running_loss / trainval_sizes[phase]
             epoch_acc = running_corrects.double() / trainval_sizes[phase]
@@ -376,6 +393,7 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
                     context = context.to(device)
                 with torch.no_grad():
                     if Is_Context:
+                        # outputs, res_c, res_f = model(face, context)
                         outputs = model(face, context)
                     else:
                         outputs = model(face)
@@ -384,6 +402,17 @@ def Trainer(dataset=dataset, save_dir=save_dir, lr=lr,
                 for xxx in range(len(preds)):
                     test_confusion_pred.append(int(preds[xxx].cpu()))
                     test_confusion_label.append(int(labels[xxx].cpu()))
+                # if epoch > 5:
+                #     xc = torch.max(res_c, 1)[1][0]
+                #     xf = torch.max(res_f, 1)[1][0]
+                #     if xc.item() == xf.item():
+                #         if (xc.item() == labels[0].item()):
+                #             if res_c[0][xc] > res_f[0][xf]:
+                #                 print(res_c[0][xc])
+                #                 st = time.time()
+                #                 unnorm_save(context[0, :, 0, :, :].cpu(), 224, str(st) + '_c')
+                #                 unnorm_save(face[0, :, 0, :, :].cpu(), 112, str(st) + '_f')
+
                 loss = criterion(outputs, labels)
                 running_loss += loss.item() * face.size(0)
                 running_corrects += torch.sum(preds == labels.data)

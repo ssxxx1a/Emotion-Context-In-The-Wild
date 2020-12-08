@@ -7,6 +7,7 @@ import math
 import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
 import torch
+from torchvision import transforms
 import numpy as np
 import cv2
 import pdb
@@ -102,10 +103,11 @@ class Bottleneck(nn.Module):
 ###''' self-attention; relation-attention '''
 
 class ResNet_AT(nn.Module):
-    def __init__(self, block, layers, num_classes=7, end2end=True, num_pair=3, at_type='self-attention'):
+    def __init__(self, block, layers, num_classes=7, end2end=True, num_pair=3, at_type='self-attention',context=False):
         self.inplanes = 64
         self.num_pair = num_pair
         self.end2end = end2end
+        self.context=context
       #  print('FAN set:[num_pair:{}][at_type:{}]'.format(num_pair, at_type))
         super(ResNet_AT, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
@@ -157,11 +159,15 @@ class ResNet_AT(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, img):
+    def forward(self, face,context=None):
         vs = []
         alphas = []
         for i in range(self.num_pair):
-            f = img[:, :,i, :, :]
+            if  self.context :
+                f = context[:, :,i, :, :]
+            else:
+                f = face[:, :, i, :, :]
+          #  transforms.ToPILImage()(f[0].cpu()).save('./f.png')
             f = self.conv1(f)
             f = self.bn1(f)
             f = self.relu(f)

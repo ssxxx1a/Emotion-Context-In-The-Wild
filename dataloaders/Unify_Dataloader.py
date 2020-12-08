@@ -19,7 +19,7 @@ such as UCF ...
 
 class Unify_Dataloader(Dataset):
     def __init__(self, dataset_name, model_input_type='caer', split='train', process=False, clip_len=16, IsMark=True,
-                 Is_Context=True):
+                 Is_Context=True, mode='face'):
         super(Unify_Dataloader, self).__init__()
         self.dataset_name = dataset_name
         self.split = split
@@ -57,7 +57,7 @@ class Unify_Dataloader(Dataset):
             # self.preprocess_ucf(self.dataset_name)
             self.preprocess(self.dataset_name)
         if not self.is_context:
-            self.video_datas, self.labels = self.Init_Data(self.dataset_name, self.split)
+            self.video_datas, self.labels = self.Init_Data(self.dataset_name, self.split, mode)
         else:
             self.video_img, self.video_face, self.labels = self.Init_Data_caen()
 
@@ -92,6 +92,7 @@ class Unify_Dataloader(Dataset):
             print('it will be take some time,but it only run once time')
 
             split = ['train', 'test']
+            generate_emotion_label(source_path, split=split)
             for i in split:
                 Generate_Data(os.path.join(source_path, i), os.path.join(temp_path, i))
             generate_split_data(saved_path)
@@ -180,14 +181,15 @@ class Unify_Dataloader(Dataset):
         os.system(com)
 
     # for data-loader  function.............
-    def Init_Data(self, dataset_name, split, path=None):
+    def Init_Data(self, dataset_name, split, model='face', path=None):
         """
         this function is used to get the list of processed video data
         :return:
         """
         if not path:
             source_path, saved_path = Dataset_Config.Get_Path(dataset_name)
-            saved_path = os.path.join(saved_path, 'face')
+            saved_path = os.path.join(saved_path, model)  # model='face'
+
         else:
             saved_path = path
 
@@ -230,7 +232,7 @@ class Unify_Dataloader(Dataset):
         if len(img_frames) < len(face_frames):
             face_frames = face_frames[:len(img_frames)]
         else:
-            img_frames = face_frames[:len(face_frames)]
+            img_frames = img_frames[:len(face_frames)]
 
         buffer_img = torch.empty(simple_len, 3, crop_size * 2, crop_size * 2)
         buffer_face = torch.empty(simple_len, 3, crop_size, crop_size)
@@ -352,7 +354,7 @@ if __name__ == '__main__':
     #     pin_memory=True,
     # )
     data = Unify_Dataloader(dataset_name='ours', model_input_type='fan', process=True, split='train', clip_len=16,
-                           IsMark=True)
+                            IsMark=True)
     for i in ['train', 'test']:
         data.process_bad_data('ours', i, ['img', 'iwf', 'face'])
     #

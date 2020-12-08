@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from dataloaders.load_ferplus import Fer_loader
 from tqdm import tqdm
 from config import Ranger
-parser = argparse.ArgumentParser(description='capsule')
+parser = argparse.ArgumentParser(description='Net')
 parser.add_argument('--nepoch', type=int, default=50, help='num of epoch')
 parser.add_argument('--lr', type=int, default=1e-3, help='lr')
 parser.add_argument('--weight_decay', type=int, default=0, help='weight_decay')

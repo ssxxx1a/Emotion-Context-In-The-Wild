@@ -4,8 +4,7 @@ import torchvision
 from model.Additional_model.model_irse import IR_50
 from model.Image_Model.resnet2 import ResNet18
 import torch.nn.functional as F
-from dataloaders.load_ferplus import Fer_loader, DataLoader
-
+from dataloaders.load_ferplus import Fer_loader
 
 class Ftune_Model(nn.Module):
     def __init__(self):

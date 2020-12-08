@@ -59,7 +59,6 @@ class Attention(nn.Module):
         #  print(attention.size())
         return attention
 
-
 class CAEN(nn.Module):
     def __init__(self, merge_frame_num=16, nhead=8, d_model=512, classes=7, fm_size_face=7, fm_size_img=7,
                  at_type='self_relation-attention', is_context=True):
@@ -77,15 +76,15 @@ class CAEN(nn.Module):
         if self.is_context:
             self.context_bkb = nn.Sequential(
                 *list(torchvision.models.resnet18(pretrained=True).children())[:-3],
-                # nn.Conv2d(1024,512,4,2,1),
-                # nn.BatchNorm2d(512),
-                # nn.LeakyReLU()
+                nn.Conv2d(256,512,4,2,1),
+                nn.BatchNorm2d(512),
+                nn.LeakyReLU()
             )
-        self.vatn = Semi_Transformer(num_classes=7, seq_len=self.merge_frame_num)
+     #   self.vatn = Semi_Transformer(num_classes=7, seq_len=self.merge_frame_num)
         # self.Face_As_kenrels = custom_Conv_Net()
-        #    self.non_local = NONLocalBlock2D(512)
+        self.non_local = NONLocalBlock2D(512)
         # self.as_some_size = nn.Conv2d(512, 512, 4, 2, 1)
-        #  self.transformer = torch.nn.Transformer(d_model=d_model, nhead=nhead, dropout=0.5)
+       # self.transformer = torch.nn.Transformer(d_model=d_model, nhead=nhead, dropout=0.5)
         # self.attention_inference_module = Attention(fm_size_face)
         self.fc = nn.Linear(512, classes)
         self.alpha = nn.Sequential(
@@ -116,6 +115,8 @@ class CAEN(nn.Module):
                 '''
                 则都是特征图
                 '''
+                print(_context.size())
+                print(_face.size())
                 context_fusion = self.non_local(_context, _face)
                 _f = _face + context_fusion
                 _f = F.adaptive_avg_pool2d(_f, 1)
@@ -175,8 +176,8 @@ class CAEN(nn.Module):
         vs = []
         alphas = []
         bs, c, t, h, w = face.size()
-        _vatn_data = face.permute(0, 2, 1, 3, 4)
-        res_of_vatn = self.vatn(_vatn_data.clone())
+        # _vatn_data = face.permute(0, 2, 1, 3, 4)
+        # res_of_vatn = self.vatn(_vatn_data.clone())
         for i in range(t):
             _face = face[:, :, i, :, :]
             _face = self.backbone_face(_face)
@@ -185,7 +186,7 @@ class CAEN(nn.Module):
                 _context = self.context_bkb(_context)
             else:
                 _context = None
-            _f = self.fusion(_context, _face, method='None')  # (1,1,512)
+            _f = self.fusion(_context, _face, method='nonlocal')  # (1,1,512)
             f = _f.view(-1, 512)
             #  print(f.size())
             fin_f = f
@@ -198,7 +199,7 @@ class CAEN(nn.Module):
             vm1 = vs_stack.mul(alphas_stack).sum(2).div(alphas_stack.sum(2))
             vm1 = self.dropout(vm1)
             pred_score = self.pred_fc1(vm1)
-            pred_score = res_of_vatn[0] + pred_score
+           # pred_score = res_of_vatn[0] + pred_score
         elif self.at_type == 'self_relation-attention':
             vm1 = vs_stack.mul(alphas_stack).sum(2).div(alphas_stack.sum(2))
             betas = []
@@ -210,7 +211,7 @@ class CAEN(nn.Module):
             output = cascadeVs_stack.mul(betas_stack * alphas_stack).sum(2).div((betas_stack * alphas_stack).sum(2))
             output = F.dropout(output, p=0.6)
             pred_score = self.pred_fc2(output)
-            pred_score = res_of_vatn[0] + pred_score
+       #     pred_score = res_of_vatn[0] + pred_score
         else:
             raise NotImplementedError
         return pred_score

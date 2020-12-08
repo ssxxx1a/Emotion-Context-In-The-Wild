@@ -161,20 +161,21 @@ def generate_dir_res_from_videos(save_path):
             os.mkdir(os.path.join(save_path, k))
 
 
-def generate_emotion_label(toppath):
-    for dir in sorted(os.listdir(toppath)):
-        if dir != '.DS_Store':
-            files = os.listdir(os.path.join(toppath, dir))
-            emotion = []
-            for file in files:
-                if 'annotator' in file.split('.')[0]:
-                    F = open(os.path.join(toppath, dir, file))
-                    emotion.append(F.readline().split(' ')[0])
-                    F.close()
-            label = max(emotion, key=emotion.count)
-            wr = open(os.path.join(toppath, dir, dir + '_label.txt'), 'w')
-            wr.write(label)
-            wr.close()
+def generate_emotion_label(toppath,split):
+    for s in split:
+        for dir in sorted(os.listdir(os.path.join(toppath,s))):
+            if dir != '.DS_Store':
+                files = os.listdir(os.path.join(toppath,s, dir))
+                emotion = []
+                for file in files:
+                    if 'annotator' in file.split('.')[0]:
+                        F = open(os.path.join(toppath,s, dir, file))
+                        emotion.append(F.readline().split(' ')[0])
+                        F.close()
+                label = max(emotion, key=emotion.count)
+                wr = open(os.path.join(toppath,s, dir, dir + '_label.txt'), 'w')
+                wr.write(label)
+                wr.close()
     print('write emotion label finished ')
 
 

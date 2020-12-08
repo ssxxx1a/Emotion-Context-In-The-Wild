@@ -21,13 +21,15 @@ class Dataset_Config(object):
             'caer': '/opt/data/private/dbmeng/Data/Emotion/Caer/Caer',
             'ucf': '/opt/data/private/data/ucf/ori_data/',
             # 'ours': '/opt/data/private/data/Refine_ECW/ECW',
-            'ours': '/opt/data/private/data/R-ecw'
+         #   'ours': '/opt/data/private/data/R-ecw'
+            'ours': '/opt/data/private/data/FR_ecw'
         }
         SAVED_PATH = {
             'caer': '/opt/data/private/data/processCaer/',
             'ucf': '/opt/data/private/data/ucf/process_data',
+            'ours': '/opt/data/private/data/FR_ecw_split'
+            #'ours': '/opt/data/private/data/R_ecw_split'
 
-            'ours': '/opt/data/private/data/R_ecw_split'
             # 'ours': '/opt/data/private/data/Refine_ECW/ECW_split',
         }
         return DATASET_PATH[dataset_name], SAVED_PATH[dataset_name]
@@ -55,13 +57,13 @@ class Model_Config(object):
             'dataset_path': '',
             'save_model_path': './saved_model',
             'save_res_path': './log',
-            'epoch': 50,
+            'epoch': 100,
             'nTestInterval': 1,  # Run on test set every nTestInterval epochs
             'snapshot': 10,  # Store a model every snapshot epochs
             'classes': 7,
             'use_test': True,
             'optim': 'Ranger',
-            'is_context': True,
+            'is_context': False,
             'merge_frame_num': 16,
             'train_threshold': 300,
             'test_threshold': 100,
@@ -127,7 +129,7 @@ class Model_Config(object):
             'model': 'caen',
             'lr': 3e-4,  # 4e-6,
             'weight_decay': 1e-4,
-            'Is_pretrain': True,
+            'Is_pretrain': False,
             'Is_scheduler': True,
         }
         FOR_TEST = {
